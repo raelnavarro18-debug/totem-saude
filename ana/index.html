@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#c62828">
+  <meta name="description" content="Totem de triagem simulada com IA — Feira de Ciências: IA e Solidariedade">
+  <title>Posto de Saúde Solidário</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="img/icone-192.png">
+  <link rel="apple-touch-icon" href="img/icone-192.png">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+  <!-- ===== Cabeçalho fixo ===== -->
+  <header class="topo">
+    <button class="logo" id="logo" aria-label="Posto de Saúde Solidário">
+      <span class="cruz" aria-hidden="true"></span>
+      <span class="logo-texto">Posto de Saúde<br><strong>Solidário</strong></span>
+    </button>
+    <div class="selo-simulacao">SIMULAÇÃO · não é diagnóstico</div>
+    <div class="status-ia" id="statusIA" title="Status da IA">
+      <span class="bolinha"></span><span id="statusTexto">verificando…</span>
+    </div>
+  </header>
+
+  <main id="app">
+
+    <!-- ===== TELA: Início ===== -->
+    <section class="tela ativa" data-tela="inicio">
+      <div class="inicio-grid">
+        <div class="inicio-chamada">
+          <h1>Mini consulta com a IA</h1>
+          <p class="lead">A IA ajuda o <strong>agente de saúde</strong> de uma comunidade isolada a orientar quem precisa de atendimento.</p>
+          <button class="btn btn-principal btn-gigante" data-acao="comecar">
+            ▶ Começar consulta
+          </button>
+          <p class="aviso-dados">🔒 Use só dados de mentira. Não digite nome, CPF ou endereço reais.</p>
+        </div>
+
+        <div class="inicio-casos">
+          <h2>Ou toque em um caso pronto</h2>
+          <div class="lista-casos" id="listaCasos"></div>
+          <div class="inicio-rodape">
+            <button class="btn btn-secundario" data-acao="mapa">🗺️ Por que isso importa?</button>
+            <div class="placar-mini">💚 <span id="placarMini">0</span> pessoas orientadas hoje</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TELA: Pergunta (reaproveitada para as 4 perguntas) ===== -->
+    <section class="tela" data-tela="pergunta">
+      <div class="progresso" id="progresso"></div>
+      <h1 class="pergunta-titulo" id="perguntaTitulo"></h1>
+      <p class="pergunta-sub" id="perguntaSub"></p>
+      <div class="opcoes" id="opcoes"></div>
+      <div class="barra-acoes">
+        <button class="btn btn-secundario" data-acao="voltar">← Voltar</button>
+        <button class="btn btn-principal escondido" id="btnContinuar" data-acao="continuar">Continuar →</button>
+      </div>
+    </section>
+
+    <!-- ===== TELA: "Outro" sintoma digitado ===== -->
+    <section class="tela" data-tela="outro">
+      <div class="progresso" id="progressoOutro"></div>
+      <h1 class="pergunta-titulo">Descreva o incômodo</h1>
+      <p class="pergunta-sub">Com poucas palavras. Ex.: "enjoo e tontura"</p>
+      <input class="campo" id="campoOutro" type="text" maxlength="80" autocomplete="off" placeholder="Digite aqui…">
+      <div class="barra-acoes">
+        <button class="btn btn-secundario" data-acao="voltar">← Voltar</button>
+        <button class="btn btn-principal" data-acao="confirmarOutro">Continuar →</button>
+      </div>
+    </section>
+
+    <!-- ===== TELA: Resumo da consulta ===== -->
+    <section class="tela" data-tela="resumo">
+      <div class="resumo-topo">
+        <h1>Resumo da consulta</h1>
+        <div class="alerta-urgente escondido" id="alertaUrgente">
+          <span class="alerta-icone">⚠️</span>
+          <div><strong>Sinal de alerta!</strong><br>Procure atendimento com urgência ou ligue <strong>SAMU 192</strong>.</div>
+        </div>
+        <p class="resumo-texto" id="resumoTexto"></p>
+      </div>
+      <div class="cartoes" id="cartoes"></div>
+      <div class="barra-acoes">
+        <button class="btn btn-secundario" data-acao="chat">💬 Perguntar à IA</button>
+        <button class="btn btn-principal" data-acao="finalizar">Próximo passo →</button>
+      </div>
+    </section>
+
+    <!-- ===== TELA: Chat livre com a IA ===== -->
+    <section class="tela" data-tela="chat">
+      <div class="chat-cabecalho">
+        <h1>Converse com a IA</h1>
+        <p>Descreva o sintoma com suas palavras. <span class="aviso-dados-inline">Não digite dados pessoais reais.</span></p>
+      </div>
+      <div class="chat-mensagens" id="chatMensagens" aria-live="polite"></div>
+      <div class="chat-sugestoes" id="chatSugestoes"></div>
+      <form class="chat-entrada" id="chatForm" autocomplete="off">
+        <input class="campo" id="chatCampo" type="text" maxlength="200" placeholder="Ex.: manchas vermelhas e febre">
+        <button class="btn btn-principal" type="submit" id="chatEnviar">Enviar</button>
+      </form>
+      <div class="barra-acoes">
+        <button class="btn btn-secundario" data-acao="voltarResumo" id="btnVoltarResumo">← Resumo</button>
+        <button class="btn btn-principal" data-acao="finalizar">Próximo passo →</button>
+      </div>
+    </section>
+
+    <!-- ===== TELA: Passo final + Placar solidário ===== -->
+    <section class="tela" data-tela="final">
+      <div class="final-caixa">
+        <div class="final-passo">
+          <div class="final-icone">🩺</div>
+          <h1>Passo final: encaminhar para a equipe de saúde</h1>
+          <p>A IA organizou as informações e apontou os sinais de alerta.<br>
+             <strong>Quem decide é sempre um profissional de saúde.</strong></p>
+        </div>
+        <div class="placar">
+          <div class="placar-coracao">💚</div>
+          <p class="placar-frase">Você ajudou a comunidade a avisar mais rápido!</p>
+          <div class="placar-numero"><span id="placarNumero">0</span></div>
+          <p class="placar-legenda">pessoas orientadas no nosso posto hoje</p>
+        </div>
+        <div class="etica">
+          <div><strong>A IA pode errar?</strong> Sim. Por isso ela só <em>apoia</em>.</div>
+          <div><strong>Quem decide?</strong> O profissional de saúde.</div>
+        </div>
+        <button class="btn btn-principal btn-gigante" data-acao="reiniciar">↻ Nova consulta</button>
+      </div>
+    </section>
+
+    <!-- ===== TELA: Mapa de acesso ===== -->
+    <section class="tela" data-tela="mapa">
+      <h1 class="mapa-titulo">Longe do hospital, perto da orientação</h1>
+      <div class="mapa-grid">
+        <div class="mapa-svg" id="mapaSvg"></div>
+        <div class="mapa-texto">
+          <div class="fato"><span>🏥</span><p>Em muitas comunidades rurais, ribeirinhas e indígenas, o hospital fica a <strong>horas de viagem</strong>.</p></div>
+          <div class="fato"><span>👩‍⚕️</span><p>Quem atende primeiro é o <strong>agente comunitário de saúde</strong>, que conhece cada família.</p></div>
+          <div class="fato"><span>📡</span><p>Com um celular e internet, a <strong>IA ajuda o agente</strong> a perceber sinais de alerta e encaminhar mais rápido.</p></div>
+          <div class="fato"><span>🤝</span><p>A tecnologia <strong>não substitui</strong> o médico: ela leva orientação a quem está longe.</p></div>
+          <button class="btn btn-principal" data-acao="comecar">▶ Fazer a mini consulta</button>
+          <button class="btn btn-secundario" data-acao="inicio">← Início</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Aviso de inatividade ===== -->
+  <div class="sobreposicao escondido" id="inatividade">
+    <div class="modal">
+      <h2>Ainda está aí? 👋</h2>
+      <p>Voltando ao início em <strong id="contagem">10</strong> segundos…</p>
+      <button class="btn btn-principal btn-gigante" data-acao="continuarAqui">Sim, continuar</button>
+    </div>
+  </div>
+
+  <!-- ===== Painel secreto (toque 5x no logo) ===== -->
+  <div class="sobreposicao escondido" id="painel">
+    <div class="modal modal-painel">
+      <h2>⚙️ Painel do grupo</h2>
+      <label>Endereço do servidor da IA (Worker)
+        <input class="campo-peq" id="cfgEndpoint" type="url" autocomplete="off" placeholder="https://totem-ia.seu-usuario.workers.dev">
+      </label>
+      <small>Vazio = modo offline (só respostas prontas). A chave fica guardada no servidor, nunca aqui.</small>
+      <label>Modelo
+        <input class="campo-peq" id="cfgModelo" type="text" autocomplete="off">
+      </label>
+      <label>Voltar ao início após (segundos parado)
+        <input class="campo-peq" id="cfgInatividade" type="number" min="15" max="600">
+      </label>
+      <p class="painel-msg" id="painelMsg"></p>
+      <div class="painel-botoes">
+        <button class="btn btn-secundario" data-acao="testarIA">Testar IA</button>
+        <button class="btn btn-secundario" data-acao="telaCheia">Tela cheia</button>
+        <button class="btn btn-secundario" data-acao="zerarPlacar">Zerar placar</button>
+        <button class="btn btn-principal" data-acao="salvarPainel">Salvar e fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/respostas.js"></script>
+  <script src="js/ia.js"></script>
+  <script src="js/mapa.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
